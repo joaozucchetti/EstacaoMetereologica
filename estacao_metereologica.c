@@ -9,13 +9,11 @@
 Adafruit_BMP280 bmp;
 
 float temperatura, pressao, altitude;
+const char* ssid = "iPhone";
+const char* senha = "123456789";
 
-// conexao wifi
-const char* ssid = "Ana";
-const char* senha = "13579000";
-
-// ips fixos
 WebServer server(80);
+
 IPAddress local_IP(192, 168, 0, 100);
 IPAddress gateway(192, 168, 0, 1);
 IPAddress subnet(255, 255, 255, 0);
@@ -27,20 +25,17 @@ void setup() {
   delay(100);
   Serial.println("Iniciando ESP32...");
 
-  // procurar o sensor na porta 
-  if (!bmp.begin(0x76)) {
-    Serial.println("❌ Sensor BMP280 não encontrado. Verifique as conexões!");
-    while (1);
-  }
-  Serial.println("✅ Sensor BMP280 detectado.");
-
-  // config da rede
   if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
     Serial.println("❌ Falha ao configurar IP fixo!");
   } else {
     Serial.println("✅ IP fixo configurado.");
   }
 
+  if (!bmp.begin(0x76)) {
+    Serial.println("❌ Sensor BMP280 não encontrado. Verifique as conexões!");
+    while (1);
+  }
+  Serial.println("✅ Sensor BMP280 detectado.");
   Serial.print("Conectando à rede: ");
   Serial.println(ssid);
   WiFi.begin(ssid, senha);
@@ -54,7 +49,7 @@ void setup() {
   Serial.print("Endereço IP: ");
   Serial.println(WiFi.localIP());
 
-  // rotas servidor web
+  // Define rotas do servidor web
   server.on("/", handle_OnConnect);
   server.onNotFound(handle_NotFound);
 
@@ -64,18 +59,31 @@ void setup() {
 
 void loop() {
   server.handleClient();
+  temperatura = bmp.readTemperature();
+  pressao = bmp.readPressure() / 100.0F;  // Converte Pa para hPa
+  altitude = bmp.readAltitude(SEALEVELPRESSURE_HPA);
+
+  Serial.println("Requisição recebida:");
+  Serial.printf("Temperatura: %.2f °C\n", temperatura);
+  Serial.printf("Pressão:     %.2f hPa\n", pressao);
+  Serial.printf("Altitude:    %.2f m\n", altitude);
+  Serial.println("___________");
+  server.send(200, "text/html", SendHTML(temperatura, pressao, altitude));
+
+  delay(600);
 }
 
-
 void handle_OnConnect() {
+
   temperatura = bmp.readTemperature();
-  pressao = bmp.readPressure() / 100.0F;
+  pressao = bmp.readPressure() / 100.0F;  // Converte Pa para hPa
   altitude = bmp.readAltitude(SEALEVELPRESSURE_HPA);
 
   Serial.println("Requisição recebida:");
   Serial.printf("Temperatura: %.2f °C\n", temperatura);
   Serial.printf("Pressão: %.2f hPa\n", pressao);
   Serial.printf("Altitude: %.2f m\n", altitude);
+
   server.send(200, "text/html", SendHTML(temperatura, pressao, altitude));
 }
 
@@ -83,7 +91,6 @@ void handle_NotFound() {
   server.send(404, "text/plain", "Página não encontrada");
 }
 
-// html da pag 
 String SendHTML(float temperatura, float pressao, float altitude) {
   String ptr = "<!DOCTYPE html><html>\n";
   ptr += "<head><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n";
