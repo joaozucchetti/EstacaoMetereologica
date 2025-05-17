@@ -6,7 +6,7 @@ import os
 import sys
 
 # configs
-ESP32_URL  = "http://192.168.0.100"
+ESP32_URL  = "http://172.20.10.11"
 CSV_PATH   = "/tmp/dados_sensor.csv"
 CSV_HEADER = ['Timestamp', 'Temperatura (C°)', 'Pressão (hPa)', 'Altitude (m)']
 
