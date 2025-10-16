@@ -2,6 +2,10 @@
 
 Este projeto implementa uma **estação meteorológica simples** utilizando um **ESP32** e o sensor **BMP280**. Os dados de temperatura, pressão atmosférica e altitude estimada são exibidos em tempo real através de um servidor web acessível na mesma rede Wi-Fi.
 
+## Disciplina: Redes de Comunicação e Aplicações Distribuidas (iot)
+## Acadêmicos
+  - João Vitor Machado Zucchetti
+  - Ana Cazarotto
 ---
 
 ## 📦 Componentes Utilizados
